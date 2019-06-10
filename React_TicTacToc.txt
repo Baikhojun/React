@@ -1,0 +1,138 @@
+//class Square extends React.Component {
+  /*
+  // x자 표시하기위해 생성자 만들자 
+  constructor(props){
+    super(props);
+    this.state = {
+       value : null, // 만들고 그 값 초기화 하기 
+
+    };
+  }*/    // 생성자는 더이상 게임의 상태 관여 안해서 삭제한다.
+//  render() {
+//   return (
+//     <button className="square"  
+       // 1) onClick={() => alert('눌러랏')} // this 문제를 줄이기 위한 가장좋은 Arrow Function을 사용하자    
+       // 2) onClick={ () => this.setState({value : '★'})}
+       // 3) onClick= { () => this.props.onClick()} 이걸 더 짧게 바꿀수있다.
+//        onClick={props.onClick}
+//        >
+//       {/* 1) {this.props.value} //부모 Board로 부터 받은 props i의 값을 square에 넣기 */}
+//        {/* 2) {this.state.value} */ }
+//        {props.value}
+//      </button>
+//    );
+//}
+
+// Class 의 활용대신 단순 값을 받기때문에 함수형으로 변경한다. 
+function Square(props) {
+  return (
+    <button className="square" onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
+}
+class Board extends React.Component {
+    constructor(props) {
+    super(props);
+    this.state = {
+       squares : Array(9).fill(null), // 9개의 null값으로 다시 변화시키기 
+       turnNext : true, // 별표시 찍은 뒤 다음 플레이어 구분하기위한 boolen 값 
+    };
+  }
+  
+  handleClick(i) {
+    const squares = this.state.squares.slice(); // 현재 component의 state인 squares를 slice(start, end) 로 보여주기
+     if (calculateWinner(squares) || squares[i]) {
+      return;
+    }
+    squares[i] =  this.state.turnNext ? '★' : '☆'; // turnNext값을 설정해서 게임 플레이어 결정하기 
+    this.setState({
+      squares : squares,
+      turnNext : !this.state.turnNext,  // 설정값 반대로 해주기위해 state를 set으로 변경시켜주기 
+    
+    });
+  }
+  
+  renderSquare(i) {
+    return (
+      <Square 
+        value={this.state.squares[i]} // props로 보내는 값을 state.squares[i]를 보냄 초기화
+        onClick={ () => this.handleClick(i)} // 클릭시 시행할 액션 넣기 
+        />);  
+  }
+
+  render() {
+    const winner = calculateWinner(this.state.squares);
+    let status;
+    if (winner) {
+      status = 'Winner: ' + winner;
+    } else {
+      status = 'Next player: ' + ( this.state.turnNext ? '★' : '☆'); // 다음 게임 할사람 보여주기위한 기능
+    }
+    
+    return (
+      <div>
+        <div className="status">{status}</div>
+        <div className="board-row">
+          {this.renderSquare(0)}
+          {this.renderSquare(1)}
+          {this.renderSquare(2)}
+        </div>
+        <div className="board-row">
+          {this.renderSquare(3)}
+          {this.renderSquare(4)}
+          {this.renderSquare(5)}
+        </div>
+        <div className="board-row">
+          {this.renderSquare(6)}
+          {this.renderSquare(7)}
+          {this.renderSquare(8)}
+        </div>
+      </div>
+    );
+  }
+}
+
+class Game extends React.Component {
+  render() {
+    return (
+      <div className="game">
+        <div className="game-board">
+          <Board />
+        </div>
+        <div className="game-info">
+          <div>{/* status */}</div>
+          <ol>{/* TODO */}</ol>
+        </div>
+      </div>
+    );
+  }
+}
+
+// ========================================
+
+ReactDOM.render(
+  <Game />,
+  document.getElementById('root')
+);
+
+// 기능 Copy & Past 이 기능으로 게임이 끝나는 경우의수에 따라 끝을 알려준다 
+function calculateWinner(squares) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  return null;
+}

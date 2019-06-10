@@ -1,0 +1,148 @@
+<html>
+    <head>
+        <title>
+            study REDUX
+        </title>
+    </head>
+
+    <body>
+        <div> Redux !!!</div>
+        <div> 한마디로 state와 props를 좀더 편리하게 해보자 </div>
+        <div> 리덕스를 사용하여 스토어를 통해 컴포넌트의 구조의 바깥에 두고 업데이트를 잘해보자</div>
+        <hr>
+        <h1 id="number">0</h1>
+        <button id="incre"> +++ </button>
+        <button id="decre"> --- </button>
+
+        <!-- Redux src -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.6.0/redux.js"></script>
+
+        <script>
+            const numberId = document.getElementById('number');
+            const btnIncre = document.getElementById('incre');
+            const btnDecre = document.getElementById('decre');
+ 
+            // Action Type  : Action은 상태 변화를 일으킬 때 참조할수 있는 객체 
+            // 액션은 필수적으로 이러한 타입을 갖는다. 
+            const INCRE = 'INCRE';
+            const DECRE = 'DECRE';
+
+            // Action Obj을 만들어주는 Action Create Function
+            const incre = (diff) => ( { type : INCRE, diff: diff});
+            const decre = () => ( { type : DECRE});
+
+            const initialState ={
+                number : 0
+            };
+        
+
+            // 리듀서 Function :액션객체를 받아서 어떻게 업데이트해야할지를 설정하는것 
+            // 사례 ) type에 icrement라는 액션이 들어오면 숫자를 더해줘라 
+            // state 와 action을 Parameter로 받아온다
+            // 그리고 그에 따라 Next State를 정의후 Return 한다.
+
+            // Parameter 의 기본값으로 state= initialState함 
+            // 기본적으로 이 두개의 파라미터는 state = 현재상태 ,action = 액션객체 
+            // Undefined 상황에서만 initialState가 들어가고 그외에는 기본 State값이 들어간다. 
+            const counter = (state = initialState, action) =>{
+                console.log("액션 객체를 받는다  => "+action);
+                console.log("액션 타입은 ?  => "+action.type);
+                switch(action.type) // 액션타입으로 어 ..증가네? .. 어 감소네.. 구분하기
+                {
+                    case INCRE:
+                     return {
+                        number : state.number + action.diff
+                     };
+                    case DECRE :
+                     return {
+                         number : state.number -18
+                     };
+                    default :
+                     return state;
+                }
+            } 
+
+            // Store를 Create할때  createStore에 
+            // Reduce Function을 넣어서 호출한다.
+            const { createStore } = Redux;
+            console.log("처음 Redux실행 "+ {createStore});
+            const store = createStore(counter);
+
+            console.log("Store Create "+ store);
+
+            // 상태가 변경 될 때 마다 호출시킬 Listener 함수
+            const render = () => {
+                numberId.innerText = store.getState().number;
+                console.log('listener() 상태가 바뀔때마다 내가실행될꺼여!!');
+            }
+
+            // 스토어에 구독을 하구, 변화가 있다면, render함수를 실행한다.
+            // 이게 바로 컴포넌트 입장에서 리랜더링하는것이다. 
+            store.subscribe(render);
+            // 초기 랜더링 작업을 위해 직접 실행
+            render();
+
+            // dispatch() ==> 상태 업데이트 해줘!! 
+            btnIncre.addEventListener('click', () => {
+                store.dispatch(incre(25));
+            })
+
+            btnDecre.addEventListener('click', () => {
+                store.dispatch(decre());
+            })      
+        
+        
+        </script>
+
+
+
+
+
+
+
+
+
+        <script>
+
+    
+         /* 
+                < 작업 정리 >
+            1. Action Type 생성
+            2. Action Type을 위한 ActionCreate Func 생성
+            -> AF 을 만든 이유 : Action을 만들 때마다 직접 Obj을 매번 생성하는것이 번거롭기때문이다.
+               나중에 Action에 다양한 Parameter가 필요할때 유용합니다.
+            3. 변화를 일으켜주는 함수, 리듀서를 정의 이 함수에서는 각 AT 마다 Action이 들어오면 
+               어떤 변화를 일으킬지 정의. 변화를 일으킬 때에는 불변성을 유지시켜주어야 합니다.
+            4. Store를 만들기. createStore를 사용해서 만든다. 그속에 리듀서가 들어간다
+            5. Store에 변화가 생길때 마다 실행시킬 리스너 함수 Render를 만들고 store.subsciribe를 통해 구독등록
+            6. 각 버튼의 클릭이벤트에 store.dispatch를 사용해 액션넣기  
+
+        */
+
+
+        /*
+                Redux의 3가지 규칙
+            1) 하나의 Application 안에는 하나의 Store 가 있다.
+             - 오직 한개의 Store를 만들어서 사용해야합니다. 다량 생성은 가능하나. 개발도구를 사용하지못한다.
+            
+            2) state => 읽 ! 기 ! 전 ! 용 ! Only read!! 
+             - React에서 state를 업데이트할때는 setState를 사용하고, Arr를 업데이트 할때는 배열에 Push(X) concat(O)
+               같은 함수를 사용하여 기존의 Arr는 수정하지않고 새로운것을 만들어서 교체하는방식으로 업데이트한다.
+               객체를 업데이트할때도 전개연산자 (...)을 사용해서 깊숙한 객체도 업데이트 합니다.
+
+               리덕스도 기존의 상태는 건들이지 않고 새로운 상태를 생성하여 업데이트 해주는 방식으로 해줘야한다. 
+               이러한 불변성을 유지해야하는 이유는 내부적으로 데이터 가 변경되는것을 감지하기위해서이다.
+            
+            3) 변화를 일으키는 함수, 리듀서는 순수한 함수여야 합니다. 
+
+
+        */
+        
+        </script>
+
+
+
+    </body>
+</html>
+
+
